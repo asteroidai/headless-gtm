@@ -1,19 +1,23 @@
-import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { promisify } from "node:util";
 import { ROOT, env } from "./env.ts";
-import { claudeEnv } from "./runner.ts";
+import { claudeEnv, redact } from "./runner.ts";
+
+const run = promisify(execFile);
 
 /** Headless runs use a long-lived token from `claude setup-token`. Browser logins expire. */
-export function authStatus(): { mode: "oauth-token" | "api-key" | "cli-login"; ok: boolean; detail: string } {
+export async function authStatus(): Promise<{ mode: "oauth-token" | "api-key" | "cli-login"; ok: boolean; detail: string }> {
   const mode = env("CLAUDE_CODE_OAUTH_TOKEN") ? "oauth-token" : env("ANTHROPIC_API_KEY") ? "api-key" : "cli-login";
-  const probe = spawnSync(env("CLAUDE_BIN") ?? "claude", ["-p", "Reply with the single word ok.", "--max-turns", "1"], {
-    env: claudeEnv(),
-    encoding: "utf8",
-    timeout: 60_000,
-  });
-  const ok = probe.status === 0;
-  return { mode, ok, detail: ok ? "claude answered" : (probe.stderr || probe.stdout || "no output").trim().slice(0, 200) };
+  try {
+    await run(env("CLAUDE_BIN") ?? "claude", ["-p", "Reply with the single word ok.", "--max-turns", "1"], { env: claudeEnv(), timeout: 60_000, encoding: "utf8" });
+    return { mode, ok: true, detail: "claude answered" };
+  } catch (err) {
+    const e = err as { killed?: boolean; stderr?: string; stdout?: string; message?: string };
+    const detail = e.killed ? "no answer within 60s" : (e.stderr || e.stdout || e.message || "no output").trim().slice(0, 200);
+    return { mode, ok: false, detail: redact(detail) };
+  }
 }
 
 /** Replace the token in `.env` and in this process. Running jobs pick it up on their next spawn. */

@@ -46,12 +46,12 @@ export function adminRoutes(cfg: Config): Hono {
     return d ? c.json({ ok: true, draft: d }) : c.json({ ok: false, error: "not found" }, 404);
   });
 
-  app.get("/admin/claude-auth", requireAdmin, (c) => c.json(authStatus()));
+  app.get("/admin/claude-auth", requireAdmin, async (c) => c.json(await authStatus()));
   app.post("/admin/claude-auth", requireAdmin, async (c) => {
     const body = (await c.req.json().catch(() => null)) as { token?: string } | null;
     try {
       rotateToken(body?.token ?? "");
-      return c.json(authStatus());
+      return c.json(await authStatus());
     } catch (err) {
       return c.json({ ok: false, error: err instanceof Error ? err.message : String(err) }, 400);
     }
