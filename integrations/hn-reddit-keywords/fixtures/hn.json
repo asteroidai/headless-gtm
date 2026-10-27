@@ -1,0 +1,6 @@
+{
+  "hits": [
+    { "objectID": "40000001", "title": "Show HN: A browser agent that fills out portal forms", "url": "https://example.dev/show-hn", "author": "example_dev", "created_at": "2026-03-10T07:12:00.000Z", "created_at_i": 1773126720 },
+    { "objectID": "40000002", "title": null, "story_title": "Ask HN: Anyone automating payer portals?", "url": null, "author": "ops_person", "created_at": "2026-03-10T06:40:00.000Z", "created_at_i": 1773124800, "comment_text": "We tried a <b>browser agent</b> for this last quarter &amp; it mostly worked." }
+  ]
+}

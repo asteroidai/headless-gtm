@@ -1,0 +1,14 @@
+# Locally managed tunnel, if you prefer a file over the dashboard.
+# cloudflared tunnel create gtm; cloudflared tunnel route dns gtm webhooks.yourco.com; same for gtm.yourco.com
+tunnel: gtm
+credentials-file: /Users/you/.cloudflared/<tunnel-id>.json
+
+ingress:
+  - hostname: webhooks.yourco.com
+    path: ^/webhooks/
+    service: http://localhost:5005
+  - hostname: webhooks.yourco.com
+    service: http_status:404
+  - hostname: gtm.yourco.com
+    service: http://localhost:5005
+  - service: http_status:404

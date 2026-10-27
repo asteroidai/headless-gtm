@@ -1,0 +1,13 @@
+{
+  "name": "hn-reddit-keywords",
+  "kind": "pull",
+  "description": "Daily keyword scan of Hacker News (Algolia API) and Reddit (public JSON). New mentions go to a digest skill.",
+  "env": [],
+  "events": ["hn-reddit-keywords.mentions.found"],
+  "skills": ["daily-digest"],
+  "schedule": "0 8 * * *",
+  "defaults": {
+    "on": { "hn-reddit-keywords.mentions.found": "daily-digest" },
+    "settings": { "keywords": ["browser agent", "your product category"], "subreddits": [], "max_items": 40 }
+  }
+}

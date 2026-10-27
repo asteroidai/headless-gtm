@@ -1,0 +1,7 @@
+{
+  "name": "apollo",
+  "kind": "tool",
+  "description": "Company and person enrichment, plus people search, through the Apollo API. Reads only.",
+  "env": [{ "name": "APOLLO_API_KEY", "required": true, "about": "Apollo settings -> Integrations -> API" }],
+  "skills": []
+}

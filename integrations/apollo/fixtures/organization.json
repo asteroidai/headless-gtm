@@ -1,0 +1,19 @@
+{
+  "organization": {
+    "name": "Example Health",
+    "primary_domain": "example-health.com",
+    "website_url": "http://www.example-health.com",
+    "linkedin_url": "http://www.linkedin.com/company/example-health",
+    "industry": "hospital & health care",
+    "estimated_num_employees": 180,
+    "founded_year": 2019,
+    "annual_revenue_printed": "25M",
+    "total_funding_printed": "42M",
+    "latest_funding_stage": "Series B",
+    "city": "Austin",
+    "state": "Texas",
+    "country": "United States",
+    "short_description": "Example Health coordinates care for clinics and payers.",
+    "keywords": ["care coordination", "referrals", "prior authorization"]
+  }
+}

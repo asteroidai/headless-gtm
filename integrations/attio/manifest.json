@@ -1,0 +1,7 @@
+{
+  "name": "attio",
+  "kind": "write",
+  "description": "Attio CRM: find and upsert companies and people, add notes. Uses standard attributes only.",
+  "env": [{ "name": "ATTIO_API_KEY", "required": true, "about": "Attio -> Workspace settings -> Developers. Needs record read/write and note write scopes." }],
+  "skills": []
+}

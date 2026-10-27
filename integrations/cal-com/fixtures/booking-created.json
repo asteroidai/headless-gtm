@@ -1,0 +1,19 @@
+{
+  "triggerEvent": "BOOKING_CREATED",
+  "createdAt": "2026-03-10T14:02:11.000Z",
+  "payload": {
+    "uid": "bk_7f3a9c2e",
+    "title": "Intro call between Sam Rivera and Dana Lee",
+    "eventTitle": "Intro call",
+    "startTime": "2026-03-12T16:00:00.000Z",
+    "endTime": "2026-03-12T16:30:00.000Z",
+    "organizer": { "name": "Dana Lee", "email": "dana@yourco.com", "timeZone": "America/New_York" },
+    "attendees": [{ "name": "Sam Rivera", "email": "sam.rivera@example-health.com", "timeZone": "America/Chicago" }],
+    "responses": {
+      "name": { "label": "your_name", "value": "Sam Rivera" },
+      "email": { "label": "email_address", "value": "sam.rivera@example-health.com" },
+      "notes": { "label": "additional_notes", "value": "We spend hours a week re-keying referrals into a payer portal. Want to see if agents can do it." }
+    },
+    "metadata": { "videoCallUrl": "https://meet.example.com/abc-defg-hij" }
+  }
+}

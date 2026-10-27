@@ -1,0 +1,11 @@
+{
+  "name": "signup",
+  "kind": "signal",
+  "description": "Your own app POSTs {email, name?, company?} with a shared secret when someone signs up.",
+  "env": [
+    { "name": "SIGNUP_SECRET", "required": true, "about": "Sent by your app as the x-signup-secret header." }
+  ],
+  "events": ["signup.created"],
+  "skills": ["research-company"],
+  "defaults": { "on": { "signup.created": "research-company" } }
+}

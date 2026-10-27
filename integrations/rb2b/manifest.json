@@ -1,0 +1,11 @@
+{
+  "name": "rb2b",
+  "kind": "signal",
+  "description": "RB2B identified website visitors. A visitor with a business email or company website becomes a signal.",
+  "env": [
+    { "name": "RB2B_TOKEN", "required": true, "about": "A token you choose. Put it in the webhook URL as ?token=... in RB2B." }
+  ],
+  "events": ["rb2b.visitor.identified"],
+  "skills": ["research-company"],
+  "defaults": { "on": { "rb2b.visitor.identified": "research-company" } }
+}

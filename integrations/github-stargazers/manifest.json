@@ -1,0 +1,15 @@
+{
+  "name": "github-stargazers",
+  "kind": "pull",
+  "description": "New stargazers of your GitHub repos, daily. Each new star becomes a signal.",
+  "env": [
+    { "name": "GITHUB_TOKEN", "required": false, "about": "Raises the API rate limit. A fine-grained token with public repo read is enough." }
+  ],
+  "events": ["github-stargazers.star.new"],
+  "skills": ["research-company"],
+  "schedule": "0 9 * * *",
+  "defaults": {
+    "on": { "github-stargazers.star.new": "research-company" },
+    "settings": { "repos": ["yourorg/yourrepo"], "first_run_limit": 5, "max_per_run": 20 }
+  }
+}

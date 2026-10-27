@@ -1,0 +1,22 @@
+# headless-gtm config. Nothing runs unless it is listed here.
+port: 5005
+
+claude:
+  concurrency: 2       # headless claude runs at once
+  timeout_minutes: 10  # kill a run after this
+  max_turns: 60
+
+# Integrations from integrations/<name>/. Add one with: pnpm gtm add <name>
+integrations:
+  - cal-com
+  - slack
+
+# Event -> skill. The skill reads the signal from its payload file.
+on:
+  cal-com.booking.created: pre-demo-brief
+
+# Cron schedules. A schedule runs a pull, a skill, or both.
+schedules: []
+
+# Per-integration settings, read by pulls and actions.
+settings: {}

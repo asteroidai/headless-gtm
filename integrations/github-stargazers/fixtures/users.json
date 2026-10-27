@@ -1,0 +1,5 @@
+{
+  "octo-ann": { "login": "octo-ann", "name": "Ann Example", "company": "@example-robotics", "blog": "https://www.example-robotics.com", "email": null, "bio": "Builds warehouse robots", "html_url": "https://github.com/octo-ann", "location": "Austin, TX" },
+  "octo-bo": { "login": "octo-bo", "name": null, "company": null, "blog": "", "email": null, "bio": null, "html_url": "https://github.com/octo-bo", "location": null },
+  "octo-cy": { "login": "octo-cy", "name": "Cy Example", "company": "Example Fintech", "blog": "example-fintech.io", "email": "cy@example-fintech.io", "bio": "CTO", "html_url": "https://github.com/octo-cy", "location": "London" }
+}

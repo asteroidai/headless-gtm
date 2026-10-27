@@ -1,0 +1,11 @@
+{
+  "name": "cal-com",
+  "kind": "signal",
+  "description": "Cal.com bookings. A new booking becomes a signal; the default route writes a pre-demo brief.",
+  "env": [
+    { "name": "CALCOM_WEBHOOK_SECRET", "required": true, "about": "The secret you type into the Cal.com webhook form. Cal.com signs each body with it." }
+  ],
+  "events": ["cal-com.booking.created"],
+  "skills": ["pre-demo-brief"],
+  "defaults": { "on": { "cal-com.booking.created": "pre-demo-brief" } }
+}

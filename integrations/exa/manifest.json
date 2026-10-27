@@ -1,0 +1,7 @@
+{
+  "name": "exa",
+  "kind": "tool",
+  "description": "Web search and page contents for skills, through the Exa API.",
+  "env": [{ "name": "EXA_API_KEY", "required": true, "about": "From dashboard.exa.ai" }],
+  "skills": []
+}

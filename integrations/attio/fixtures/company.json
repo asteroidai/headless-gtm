@@ -1,0 +1,10 @@
+{
+  "data": {
+    "id": { "workspace_id": "00000000-0000-0000-0000-000000000000", "object_id": "00000000-0000-0000-0000-000000000000", "record_id": "11111111-1111-1111-1111-111111111111" },
+    "web_url": "https://app.attio.com/yourco/company/11111111-1111-1111-1111-111111111111",
+    "values": {
+      "name": [{ "value": "Example Health" }],
+      "domains": [{ "domain": "example-health.com" }]
+    }
+  }
+}
