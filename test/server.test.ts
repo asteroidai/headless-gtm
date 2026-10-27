@@ -93,6 +93,28 @@ describe("server", () => {
     expect(drafts.drafts.some((d) => d.to === "priya@example-logistics.com")).toBe(true);
   });
 
+  it("serves a log only for a known job id", async () => {
+    expect((await app.request("/jobs/..%2F..%2Fpackage/log")).status).toBe(404);
+    expect((await app.request("/jobs/../../package/log")).status).toBe(404);
+  });
+
+  it("rejects a body over the limit", async () => {
+    const big = JSON.stringify({ email: "a@b.com", pad: "x".repeat(1024 * 1024) });
+    const res = await app.request("/webhooks/signup", { method: "POST", body: big, headers: signup.sign!(big).headers });
+    expect(res.status).toBe(413);
+  });
+
+  it("rejects a completion for a job that is not running", async () => {
+    process.env.FAKE_CLAUDE_MODE = "fail";
+    const run = await app.request("/jobs/run", { method: "POST", body: JSON.stringify({ skill: "x" }), headers: { authorization: "Bearer admin" } });
+    const { job } = (await run.json()) as { job: { id: string } };
+    await waitFor(job.id, "failed");
+    delete process.env.FAKE_CLAUDE_MODE;
+    const res = await app.request(`/jobs/${job.id}/complete`, { method: "POST", body: JSON.stringify({ summary: "late" }), headers: { authorization: `Bearer ${getJob(job.id)!.token}` } });
+    expect(res.status).toBe(409);
+    expect(getJob(job.id)!.status).toBe("failed");
+  });
+
   it("rejects a completion without a summary", async () => {
     const run = await app.request("/jobs/run", { method: "POST", body: JSON.stringify({ skill: "x" }), headers: { authorization: "Bearer admin" } });
     const { job } = (await run.json()) as { job: { id: string } };

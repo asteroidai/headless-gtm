@@ -3,13 +3,14 @@ import type { Config } from "./config.ts";
 import { Pool } from "./pool.ts";
 import { createJob, getJob, jobLogPath, jobPayloadPath, updateJob } from "./jobs.ts";
 import { writeJson } from "./persist.ts";
-import { runClaude } from "./runner.ts";
+import { redact, runClaude } from "./runner.ts";
 import { applyCompletion } from "./writes.ts";
 import type { Completion, Job, Signal } from "./types.ts";
 
 let pool = new Pool(2);
 let settings: Config["claude"] = { concurrency: 2, timeoutMinutes: 10, maxTurns: 60 };
 let port = 5005;
+const completing = new Set<string>();
 
 export function configureQueue(cfg: Config): void {
   settings = cfg.claude;
@@ -63,23 +64,34 @@ async function run(id: string): Promise<void> {
       updateJob(job.id, { status: "failed", endedAt: new Date().toISOString(), error: outcome.error, costUsd: outcome.costUsd });
       console.log(`[job ${job.id.slice(0, 8)}] failed: ${outcome.error}`);
     }
+  } catch (err) {
+    // An unhandled rejection here would take the server down with it.
+    const error = redact(err instanceof Error ? err.message : String(err));
+    updateJob(id, { status: "failed", endedAt: new Date().toISOString(), error });
+    console.error(`[job ${id.slice(0, 8)}] failed: ${error}`);
   } finally {
     release();
   }
 }
 
-/** The agent posted its result. Apply writes, store drafts, mark done. */
-export async function complete(id: string, body: Completion): Promise<Job> {
-  const applied = await applyCompletion(id, body);
-  const job = updateJob(id, {
-    status: "done",
-    endedAt: new Date().toISOString(),
-    summary: body.summary,
-    writes: applied.writes,
-    draftIds: applied.draftIds,
-  })!;
-  console.log(`[job ${id.slice(0, 8)}] completed: ${body.summary.slice(0, 80)}`);
-  return job;
+/** The agent posted its result. Apply writes, store drafts, mark done. Null when a completion is already in flight. */
+export async function complete(id: string, body: Completion): Promise<Job | null> {
+  if (completing.has(id)) return null;
+  completing.add(id);
+  try {
+    const applied = await applyCompletion(id, body);
+    const job = updateJob(id, {
+      status: "done",
+      endedAt: new Date().toISOString(),
+      summary: body.summary,
+      writes: applied.writes,
+      draftIds: applied.draftIds,
+    })!;
+    console.log(`[job ${id.slice(0, 8)}] completed: ${body.summary.slice(0, 80)}`);
+    return job;
+  } finally {
+    completing.delete(id);
+  }
 }
 
 export function readLog(id: string): string | null {
