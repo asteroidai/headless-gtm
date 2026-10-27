@@ -5,7 +5,7 @@ import { readJson, writeJson } from "./persist.ts";
 import type { Job, Signal } from "./types.ts";
 
 const FILE = resolve(DATA_DIR, "jobs.json");
-const KEEP = 500;
+export const KEEP = 500;
 
 let jobs: Job[] = readJson<Job[]>(FILE, []);
 
@@ -35,7 +35,7 @@ export function createJob(skill: string, input: Record<string, unknown>, signal?
     token: randomBytes(16).toString("hex"),
   };
   jobs.unshift(job);
-  if (jobs.length > KEEP) jobs = jobs.slice(0, KEEP);
+  trim();
   save();
   return job;
 }
@@ -68,6 +68,14 @@ export function jobPayloadPath(id: string): string {
 export function resetJobs(): void {
   jobs = [];
   save();
+}
+
+/** Keep the newest KEEP jobs, but never drop one that is queued or running. */
+function trim(): void {
+  for (let i = jobs.length - 1; i >= 0 && jobs.length > KEEP; i--) {
+    const s = jobs[i]!.status;
+    if (s === "done" || s === "failed") jobs.splice(i, 1);
+  }
 }
 
 function save(): void {
