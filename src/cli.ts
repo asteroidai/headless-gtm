@@ -62,17 +62,21 @@ function list(): void {
 function add(name: string): void {
   const m = readManifest(name);
   const doc: Document = existsSync(CONFIG_PATH) ? parseDocument(readFileSync(CONFIG_PATH, "utf8")) : parseDocument("{}");
+  ensureCollection(doc, "integrations", []);
   const integrations = (doc.get("integrations") as { items?: unknown[] } | undefined)?.items ?? [];
   const already = integrations.some((n) => String(n) === name || (n as { value?: string })?.value === name);
   if (!already) doc.addIn(["integrations"], name);
 
+  if (m.defaults?.on) ensureCollection(doc, "on", {});
   for (const [event, skill] of Object.entries(m.defaults?.on ?? {})) {
     if (!doc.hasIn(["on", event])) doc.setIn(["on", event], skill);
   }
+  if (m.defaults?.settings) ensureCollection(doc, "settings", {});
   for (const [k, v] of Object.entries(m.defaults?.settings ?? {})) {
     if (!doc.hasIn(["settings", name, k])) doc.setIn(["settings", name, k], v);
   }
   if (m.kind === "pull" && m.schedule) {
+    ensureCollection(doc, "schedules", []);
     const schedules = (doc.get("schedules") as { items?: Array<{ get: (k: string) => unknown }> } | undefined)?.items ?? [];
     if (!schedules.some((s) => s.get?.("pull") === name)) doc.addIn(["schedules"], { name, cron: m.schedule, pull: name });
   }
@@ -94,8 +98,14 @@ function add(name: string): void {
   console.log("restart the server to load it");
 }
 
+/** `addIn` and `setIn` need a collection under the key. A missing key or a bare `key:` gives a scalar and corrupts the file. */
+function ensureCollection(doc: Document, key: string, empty: unknown[] | Record<string, never>): void {
+  if (!isCollection(doc.get(key, true))) doc.setIn([key], doc.createNode(empty));
+}
+
 /** An empty `[]` or `{}` in the file stays flow-style once filled. Block style reads better. */
 function blockStyle(doc: Document): void {
+  if (isCollection(doc.contents)) doc.contents.flow = false;
   for (const key of ["integrations", "on", "schedules", "settings"]) {
     const node = doc.get(key, true);
     if (!isCollection(node)) continue;
@@ -109,6 +119,7 @@ function blockStyle(doc: Document): void {
 
 async function tool(integration: string, action: string, json?: string): Promise<void> {
   const cfg = loadConfig();
+  if (!cfg.integrations.includes(integration)) throw new Error(`"${integration}" is not enabled. Run: pnpm gtm add ${integration}`);
   configureWrites(cfg.settings);
   await loadIntegrations([integration]);
   const out = await runAction(integration, action, json ? JSON.parse(json) : {});
