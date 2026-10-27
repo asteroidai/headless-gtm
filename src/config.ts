@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
+import { parseCron } from "./cron.ts";
 import { ROOT } from "./env.ts";
 
 export interface Schedule {
@@ -68,7 +69,11 @@ function validate(cfg: Config): void {
   for (const s of cfg.schedules) {
     if (!s.pull && !s.skill) throw new Error(`schedule "${s.name}" needs a pull or a skill`);
     if (s.pull && !names.has(s.pull)) throw new Error(`schedule "${s.name}" pulls "${s.pull}", which is not enabled`);
-    if (s.cron.trim().split(/\s+/).length !== 5) throw new Error(`schedule "${s.name}" has a bad cron "${s.cron}"`);
+    try {
+      parseCron(s.cron);
+    } catch {
+      throw new Error(`schedule "${s.name}" has a bad cron "${s.cron}"`);
+    }
   }
 }
 
