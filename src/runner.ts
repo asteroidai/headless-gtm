@@ -68,13 +68,14 @@ export function runClaude(opts: RunOptions): Promise<RunOutcome> {
     );
     live.add(child);
 
+    let settled = false;
     let buffer = "";
     let result: { is_error?: boolean; result?: string; total_cost_usd?: number } | null = null;
     let stderr = "";
     let timedOut = false;
 
     child.stdout!.on("data", (chunk: Buffer) => {
-      log.write(chunk);
+      if (!settled) log.write(chunk);
       buffer += chunk.toString();
       let nl: number;
       while ((nl = buffer.indexOf("\n")) >= 0) {
@@ -90,11 +91,10 @@ export function runClaude(opts: RunOptions): Promise<RunOutcome> {
       }
     });
     child.stderr!.on("data", (chunk: Buffer) => {
-      log.write(chunk);
+      if (!settled) log.write(chunk);
       stderr = (stderr + chunk.toString()).slice(-2000);
     });
 
-    let settled = false;
     const settle = (o: RunOutcome, tail: string) => {
       if (settled) return;
       settled = true;
