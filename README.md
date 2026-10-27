@@ -19,6 +19,7 @@ You need Node 20.12+, pnpm, and the [Claude Code CLI](https://docs.anthropic.com
 git clone https://github.com/asteroidai/headless-gtm && cd headless-gtm
 pnpm install
 cp .env.example .env         # set CALCOM_WEBHOOK_SECRET (any string) and ADMIN_TOKEN (openssl rand -hex 16)
+pnpm gtm doctor              # node, claude, .env, config
 pnpm dev                     # http://localhost:5005
 ```
 
@@ -132,6 +133,7 @@ When `ADMIN_TOKEN` is set, every route marked admin needs it: `Authorization: Be
 ## Develop
 
 ```sh
+pnpm gtm doctor  # node, claude, .env, config and env vars
 pnpm test        # vitest; fetch is mocked, claude is a shell script
 pnpm typecheck
 ```

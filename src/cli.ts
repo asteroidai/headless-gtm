@@ -1,5 +1,7 @@
+import { execFile } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { promisify } from "node:util";
 import { isCollection, parseDocument, type Document } from "yaml";
 import { CONFIG_PATH, loadConfig } from "./config.ts";
 import { ROOT, env, loadEnv } from "./env.ts";
@@ -7,6 +9,7 @@ import { INTEGRATIONS_DIR, listAvailable, loadIntegrations, missingEnv, notEnabl
 import { configureWrites, runAction } from "./writes.ts";
 
 const USAGE = `usage:
+  gtm doctor                               check node, claude, .env, the config and its env vars
   gtm list                                 integrations: on, off, or disabled for missing env
   gtm add <integration>                    enable one in gtm.config.yaml, print its env vars
   gtm tool <integration> <action> [json]   call an action (skills use this for reads)
@@ -20,6 +23,8 @@ const [cmd, ...args] = process.argv.slice(2);
 
 try {
   switch (cmd) {
+    case "doctor":
+      process.exit(await doctor());
     case "list":
       list();
       break;
@@ -172,4 +177,48 @@ async function request(method: string, path: string, body?: string, headers: Rec
     throw new Error(`server not reachable at ${base}. Start it with: pnpm dev`);
   });
   return { status: res.status, text: await res.text() };
+}
+
+/** The checks a first run trips over. Returns the exit code. */
+async function doctor(): Promise<number> {
+  let problems = 0;
+  const ok = (s: string) => console.log(`ok  ${s}`);
+  const bad = (s: string) => {
+    problems++;
+    console.log(`!!  ${s}`);
+  };
+  const [major = 0, minor = 0] = process.versions.node.split(".").map(Number);
+  if (major > 20 || (major === 20 && minor >= 12)) ok(`node ${process.versions.node}`);
+  else bad(`node ${process.versions.node}; need 20.12 or newer`);
+  if (existsSync(resolve(ROOT, ".env"))) ok(".env present");
+  else bad(".env missing. Run: cp .env.example .env");
+  const bin = env("CLAUDE_BIN") ?? "claude";
+  try {
+    const { stdout } = await promisify(execFile)(bin, ["--version"], { timeout: 15_000, encoding: "utf8" });
+    ok(`claude ${stdout.trim().split("\n")[0]}`);
+  } catch {
+    bad(`claude not found as "${bin}". Install Claude Code, or set CLAUDE_BIN in .env`);
+  }
+  ok(`claude auth: ${env("CLAUDE_CODE_OAUTH_TOKEN") ? "subscription token" : env("ANTHROPIC_API_KEY") ? "API key" : "the CLI's own login (fine on a laptop; it expires on a server)"}`);
+  let cfg;
+  try {
+    cfg = loadConfig();
+    ok(`gtm.config.yaml: ${cfg.integrations.length} integration(s), ${cfg.schedules.length} schedule(s)`);
+  } catch (err) {
+    bad(`gtm.config.yaml: ${err instanceof Error ? err.message : err}`);
+    return 1;
+  }
+  for (const name of cfg.integrations) {
+    const m = readManifest(name);
+    const missing = missingEnv(m);
+    if (missing.length) bad(`${name}: set ${missing.join(", ")} in .env`);
+    else ok(name);
+    for (const skill of m.skills ?? []) {
+      if (!existsSync(resolve(ROOT, ".claude/skills", skill, "SKILL.md"))) bad(`${name} expects /${skill}, which is not in .claude/skills/`);
+    }
+  }
+  if (env("ADMIN_TOKEN")) ok("ADMIN_TOKEN set");
+  else console.log("--  ADMIN_TOKEN empty: fine on a laptop, set it before you open a tunnel");
+  console.log(problems ? `${problems} problem(s)` : "all good");
+  return problems ? 1 : 0;
 }

@@ -9,7 +9,7 @@ You are talking to a founder who just cloned this repo. Go step by step. Ask one
 
 ## 1. Check the basics
 
-Run `node --version` (need 20.12+), `pnpm --version`, `claude --version`. Run `pnpm install` if `node_modules/` is missing. Copy `.env.example` to `.env` if `.env` is missing. Set `ADMIN_TOKEN` to a long random string (`openssl rand -hex 16`) and say that the dashboard asks for it as the password.
+Run `pnpm install` if `node_modules/` is missing, then `pnpm -s gtm doctor`. Fix what it flags with them. Copy `.env.example` to `.env` if `.env` is missing. Set `ADMIN_TOKEN` to a long random string (`openssl rand -hex 16`) and say that the dashboard asks for it as the password.
 
 Ask how they run Claude: a subscription (then run `claude setup-token` and put the token in `CLAUDE_CODE_OAUTH_TOKEN`) or an API key (`ANTHROPIC_API_KEY`). Tell them to check Anthropic's terms for their usage.
 
