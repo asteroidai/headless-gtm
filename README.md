@@ -18,7 +18,7 @@ You need Node 20.12+, pnpm, and the [Claude Code CLI](https://docs.anthropic.com
 ```sh
 git clone https://github.com/asteroidai/headless-gtm && cd headless-gtm
 pnpm install
-cp .env.example .env         # fill CALCOM_WEBHOOK_SECRET (any string you choose) and the Slack vars
+cp .env.example .env         # set CALCOM_WEBHOOK_SECRET to any string you choose
 pnpm dev                     # http://localhost:5005
 ```
 
@@ -38,13 +38,13 @@ Or skip Cal.com and replay the recorded fixture:
 pnpm gtm webhook cal-com
 ```
 
-Open http://localhost:5005. The job appears, `claude` runs `/pre-demo-brief`, and the brief lands in Slack. No Slack yet? Remove `slack` from `integrations` in `gtm.config.yaml`; the brief then lands in the job summary.
+Open http://localhost:5005. The job appears, `claude` runs `/pre-demo-brief`, and the brief is the job summary. To get it in Slack instead: `pnpm gtm add slack`, set the two env vars it names, restart.
 
 Or let Claude Code do the setup with you: open `claude` in the repo and type `/setup`.
 
 ## Config
 
-Everything is in `gtm.config.yaml`. Nothing runs unless it is listed there.
+Everything is in `gtm.config.yaml`. Nothing runs unless it is listed there. An enabled integration with a required env var unset is disabled until you set it; the boot log, the dashboard and `pnpm gtm list` say which key is missing.
 
 ```yaml
 integrations: [cal-com, slack, attio, exa]

@@ -18,7 +18,7 @@ export function dashboardRoutes(): Hono {
   <td><code>/${esc(j.skill)}</code></td>
   <td>${esc(j.status)}</td>
   <td>${esc(j.signal?.event ?? "")}</td>
-  <td>${esc(j.summary ?? j.error ?? "").slice(0, 160)}</td>
+  <td>${cell(j.summary ?? j.error ?? "")}</td>
   <td><a href="/jobs/${j.id}">json</a> <a href="/jobs/${j.id}/log">log</a></td>
 </tr>`,
       )
@@ -37,6 +37,7 @@ export function dashboardRoutes(): Hono {
 body{font:14px system-ui;margin:2rem;max-width:1100px;color:#222}
 table{border-collapse:collapse;width:100%}td,th{padding:.35rem .5rem;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}
 tr.running td:nth-child(3){color:#b7791f}tr.failed td:nth-child(3){color:#c53030}tr.done td:nth-child(3){color:#2f855a}
+pre{white-space:pre-wrap;margin:.4rem 0;font:13px/1.4 system-ui}
 code{background:#f3f3f3;padding:0 .3rem}code.off{color:#c53030}
 </style>
 <h1>headless-gtm</h1>
@@ -47,6 +48,12 @@ code{background:#f3f3f3;padding:0 .3rem}code.off{color:#c53030}
 <table><tr><th>when</th><th>skill</th><th>status</th><th>event</th><th>result</th><th></th></tr>${rows}</table>`);
   });
   return app;
+}
+
+/** A long summary (a brief) folds behind its first line. */
+function cell(s: string): string {
+  if (s.length <= 160) return esc(s);
+  return `<details><summary>${esc(s.slice(0, 160))}...</summary><pre>${esc(s)}</pre></details>`;
 }
 
 function esc(s: string): string {
