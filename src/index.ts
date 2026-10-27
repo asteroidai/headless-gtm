@@ -17,7 +17,7 @@ configureQueue(cfg);
 configureWrites(cfg.settings);
 
 const integrations = await loadIntegrations(cfg.integrations);
-if (!process.env.ADMIN_TOKEN) console.warn("ADMIN_TOKEN is empty: admin routes are open. Fine on a laptop, not in production.");
+if (!process.env.ADMIN_TOKEN) console.warn("ADMIN_TOKEN is empty: the dashboard and admin routes are open to anyone who reaches the port. Set it before you open a tunnel.");
 
 const interrupted = recoverJobs();
 if (interrupted) console.log(`marked ${interrupted} interrupted job(s) failed`);

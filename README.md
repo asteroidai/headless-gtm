@@ -4,7 +4,7 @@ A GTM engine for founders, with Claude Code as the backend.
 
 Four building blocks:
 
-1. **Claude Code is the backend.** A small server spawns headless `claude -p "/<skill> <payload>"` runs with a concurrency cap, a timeout, a log per job, and an endpoint the agent POSTs its result to. There is very little deterministic code.
+1. **Claude Code is the backend.** A small server spawns headless `claude -p "/<skill> <payload>"` pnpm gtm list|add|tool|run|pull|webhook|jobss with a concurrency cap, a timeout, a log per job, and an endpoint the agent POSTs its result to. There is very little deterministic code.
 2. **Webhooks are signals.** `POST /webhooks/:source`. Each source verifies its own secret and turns the payload into a `Signal`. The config maps a signal to a skill.
 3. **Cron jobs are pulls.** Schedules in config fetch new items from an API (new stargazers, keyword mentions) and route them the same way.
 4. **Skills are markdown.** `.claude/skills/*/SKILL.md` tells Claude what to do, step by step.
@@ -18,7 +18,7 @@ You need Node 20.12+, pnpm, and the [Claude Code CLI](https://docs.anthropic.com
 ```sh
 git clone https://github.com/asteroidai/headless-gtm && cd headless-gtm
 pnpm install
-cp .env.example .env         # set CALCOM_WEBHOOK_SECRET to any string you choose
+cp .env.example .env         # set CALCOM_WEBHOOK_SECRET (any string) and ADMIN_TOKEN (openssl rand -hex 16)
 pnpm dev                     # http://localhost:5005
 ```
 
@@ -28,7 +28,7 @@ In another terminal, expose the port:
 cloudflared tunnel --url http://localhost:5005   # or: ngrok http 5005
 ```
 
-The tunnel exposes every route, not only `/webhooks/*`. Set `ADMIN_TOKEN` in `.env` before you open it, and close it when you are done. `/jobs` and `/drafts` stay readable to anyone who has the URL.
+The tunnel exposes the whole server. `ADMIN_TOKEN` guards every route except `/webhooks/*` and `/healthz`, so set it before you open one.
 
 In Cal.com: Settings, Developer, Webhooks, New. Subscriber URL `https://<your-tunnel>/webhooks/cal-com`, trigger "Booking created", secret = your `CALCOM_WEBHOOK_SECRET`. Book a test slot.
 
@@ -38,7 +38,7 @@ Or skip Cal.com and replay the recorded fixture:
 pnpm gtm webhook cal-com
 ```
 
-Open http://localhost:5005. The job appears, `claude` runs `/pre-demo-brief`, and the brief is the job summary. To get it in Slack instead: `pnpm gtm add slack`, set the two env vars it names, restart.
+Open http://localhost:5005 and enter `ADMIN_TOKEN` as the password (user name empty), or run `pnpm gtm jobs`. The job appears, `claude` runs `/pre-demo-brief`, and the brief is the job summary. To get it in Slack instead: `pnpm gtm add slack`, set the two env vars it names, restart.
 
 Or let Claude Code do the setup with you: open `claude` in the repo and type `/setup`.
 
@@ -113,18 +113,19 @@ Headless runs pass `--dangerously-skip-permissions`. The agent can run any comma
 
 ```
 POST /webhooks/:source          signal in (verified by the integration)
-GET  /jobs, /jobs/:id, /jobs/:id/log
+GET  /jobs, /jobs/:id, /jobs/:id/log                       admin
 POST /jobs/run                  {skill, input}            admin
 POST /jobs/:id/complete         the agent's result        job token
 POST /pulls/:name/run           run a pull now            admin
 POST /schedules/:name/run       run a schedule now        admin
-GET  /drafts, /drafts/:id       what waits for a human
-GET  /integrations, /healthz
+GET  /drafts, /drafts/:id       what waits for a human    admin
+GET  /integrations              admin
+GET  /healthz
 GET  /admin/claude-auth         probe; POST {token} rotates it   admin
-GET  /                          dashboard
+GET  /                          dashboard                 admin
 ```
 
-Admin routes need `Authorization: Bearer $ADMIN_TOKEN` when it is set. In production put the dashboard behind Cloudflare Access and expose only `/webhooks/*` publicly. See `docs/deploy-mac-mini.md`.
+When `ADMIN_TOKEN` is set, every route marked admin needs it: `Authorization: Bearer $ADMIN_TOKEN`, or HTTP Basic with the token as the password (a browser asks for it). `pnpm gtm` reads it from `.env`. Webhooks verify their own secret; a completion needs its job token. In production also put the dashboard behind Cloudflare Access and expose only `/webhooks/*` publicly. See `docs/deploy-mac-mini.md`.
 
 ## Develop
 

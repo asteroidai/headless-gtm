@@ -12,7 +12,8 @@ const USAGE = `usage:
   gtm tool <integration> <action> [json]   call an action (skills use this for reads)
   gtm run <skill> [json]                   queue a skill run on the local server
   gtm pull <integration>                   run a pull now on the local server
-  gtm webhook <source> [fixture]           replay a recorded fixture at the local server`;
+  gtm webhook <source> [fixture]           replay a recorded fixture at the local server
+  gtm jobs [n]                             the last n jobs on the local server (default 20)`;
 
 loadEnv();
 const [cmd, ...args] = process.argv.slice(2);
@@ -36,6 +37,9 @@ try {
       break;
     case "webhook":
       await webhook(need(args[0], "source"), args[1]);
+      break;
+    case "jobs":
+      await jobs(Number(args[0] ?? 20));
       break;
     default:
       console.log(USAGE);
@@ -137,19 +141,35 @@ async function webhook(source: string, fixture?: string): Promise<void> {
   if (!i) throw new Error(`${notEnabledReason(source)}. Set it in .env first.`);
   const signed = i.sign?.(rawBody) ?? {};
   const qs = new URLSearchParams(signed.query ?? {}).toString();
-  await request(`/webhooks/${source}${qs ? `?${qs}` : ""}`, rawBody, signed.headers);
+  const r = await request("POST", `/webhooks/${source}${qs ? `?${qs}` : ""}`, rawBody, signed.headers);
+  console.log(`${r.status} ${r.text}`);
+}
+
+async function jobs(limit: number): Promise<void> {
+  const r = await request("GET", `/jobs?limit=${limit}`, undefined, adminHeaders());
+  if (r.status !== 200) throw new Error(`${r.status} ${r.text}`);
+  const list = (JSON.parse(r.text) as { jobs: Array<{ id: string; skill: string; status: string; createdAt: string; summary?: string; error?: string }> }).jobs;
+  if (!list.length) console.log("no jobs yet");
+  for (const j of list) {
+    const line = (j.summary ?? j.error ?? "").split("\n")[0]!.slice(0, 100);
+    console.log(`${j.createdAt.slice(0, 16).replace("T", " ")}  ${j.status.padEnd(7)} ${j.id.slice(0, 8)}  /${j.skill}  ${line}`);
+  }
+}
+
+function adminHeaders(): Record<string, string> {
+  const token = env("ADMIN_TOKEN");
+  return token ? { authorization: `Bearer ${token}` } : {};
 }
 
 async function post(path: string, body?: unknown): Promise<void> {
-  const headers: Record<string, string> = {};
-  if (env("ADMIN_TOKEN")) headers.authorization = `Bearer ${env("ADMIN_TOKEN")}`;
-  await request(path, body === undefined ? undefined : JSON.stringify(body), headers);
+  const r = await request("POST", path, body === undefined ? undefined : JSON.stringify(body), adminHeaders());
+  console.log(`${r.status} ${r.text}`);
 }
 
-async function request(path: string, body?: string, headers: Record<string, string> = {}): Promise<void> {
+async function request(method: string, path: string, body?: string, headers: Record<string, string> = {}): Promise<{ status: number; text: string }> {
   const base = env("GTM_URL") ?? `http://localhost:${loadConfig().port}`;
-  const res = await fetch(base + path, { method: "POST", body, headers: { "content-type": "application/json", ...headers } }).catch(() => {
+  const res = await fetch(base + path, { method, body, headers: { "content-type": "application/json", ...headers } }).catch(() => {
     throw new Error(`server not reachable at ${base}. Start it with: pnpm dev`);
   });
-  console.log(`${res.status} ${await res.text()}`);
+  return { status: res.status, text: await res.text() };
 }

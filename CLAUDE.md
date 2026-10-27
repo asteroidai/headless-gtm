@@ -1,6 +1,6 @@
 # headless-gtm
 
-A GTM engine where Claude Code is the backend. A small Hono server turns webhooks and cron jobs into
+A GTM engine where Claude Code is the backend. A small Hono server turns pnpm gtm list|add|tool|run|pull|webhook|jobss and cron jobs into
 headless `claude -p "/<skill> <payload>"` runs. Skills do the thinking. Thin adapters write to the CRM and Slack.
 A human approves anything that goes to a prospect.
 

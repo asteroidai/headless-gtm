@@ -12,7 +12,7 @@ export function adminRoutes(cfg: Config): Hono {
 
   app.get("/healthz", (c) => c.json({ ok: true, pool: poolStatus() }));
 
-  app.get("/integrations", (c) =>
+  app.get("/integrations", requireAdmin, (c) =>
     c.json({
       ok: true,
       integrations: enabledIntegrations().map((i) => i.manifest),
@@ -40,9 +40,9 @@ export function adminRoutes(cfg: Config): Hono {
     }
   });
 
-  app.get("/drafts", (c) => c.json({ ok: true, drafts: listDrafts() }));
-  app.get("/drafts/:id", (c) => {
-    const d = getDraft(c.req.param("id"));
+  app.get("/drafts", requireAdmin, (c) => c.json({ ok: true, drafts: listDrafts() }));
+  app.get("/drafts/:id", requireAdmin, (c) => {
+    const d = getDraft(c.req.param("id")!);
     return d ? c.json({ ok: true, draft: d }) : c.json({ ok: false, error: "not found" }, 404);
   });
 

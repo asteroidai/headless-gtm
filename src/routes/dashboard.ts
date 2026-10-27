@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { requireAdmin } from "../auth.ts";
 import { listDrafts } from "../drafts.ts";
 import { disabledIntegrations, enabledIntegrations } from "../integrations.ts";
 import { listJobs } from "../jobs.ts";
@@ -7,7 +8,7 @@ import { poolStatus } from "../queue.ts";
 /** One page: what ran, what is running, what waits for a human. */
 export function dashboardRoutes(): Hono {
   const app = new Hono();
-  app.get("/", (c) => {
+  app.get("/", requireAdmin, (c) => {
     const jobs = listJobs(50);
     const drafts = listDrafts();
     const pool = poolStatus();

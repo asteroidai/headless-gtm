@@ -49,12 +49,12 @@ Zero Trust, Access, Applications, Add, Self-hosted. Domain `gtm.yourco.com`. Two
 1. Allow, emails ending in `@yourco.com`, with the One-time PIN login method.
 2. Service Auth, for a service token you create under Access, Service Auth. Scripts send `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers.
 
-`ADMIN_TOKEN` still applies behind Access. Two locks, one key each.
+`ADMIN_TOKEN` still applies behind Access. Two locks, one key each. The dashboard asks for it as a password.
 
 Point the CLI at production from a laptop:
 
 ```sh
-GTM_URL=https://gtm.yourco.com ADMIN_TOKEN=... pnpm gtm pull github-stargazers
+GTM_URL=https://gtm.yourco.com ADMIN_TOKEN=... pnpm gtm jobs
 ```
 
 (The CLI does not add the CF Access headers. Add them with `curl` or put the laptop's IP in an Access bypass policy.)

@@ -16,6 +16,7 @@ on: { signup.created: research-company }
 const app = createApp(cfg);
 const fixture = readFileSync(resolve(import.meta.dirname, "../integrations/signup/fixtures/signup.json"), "utf8");
 
+const admin = { authorization: "Bearer admin" };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function waitFor(id: string, status: string) {
   for (let i = 0; i < 50; i++) {
@@ -43,7 +44,7 @@ describe("server", () => {
   });
 
   it("lists an integration with missing env as disabled and answers 503 for its webhook", async () => {
-    const body = (await (await app.request("/integrations")).json()) as { disabled: Array<{ name: string; missing: string[] }> };
+    const body = (await (await app.request("/integrations", { headers: admin })).json()) as { disabled: Array<{ name: string; missing: string[] }> };
     expect(body.disabled).toHaveLength(1);
     expect(body.disabled[0]!.name).toBe("slack");
     expect(body.disabled[0]!.missing).toContain("SLACK_BOT_TOKEN");
@@ -61,13 +62,24 @@ describe("server", () => {
     const res = await app.request("/webhooks/signup", { method: "POST", body: fixture, headers: signup.sign!(fixture).headers });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, signals: 1, jobs: 1 });
-    const list = (await (await app.request("/jobs")).json()) as { jobs: Array<{ id: string; skill: string; token?: string }> };
+    const list = (await (await app.request("/jobs", { headers: admin })).json()) as { jobs: Array<{ id: string; skill: string; token?: string }> };
     const job = list.jobs[0]!;
     expect(job.skill).toBe("research-company");
     expect(job.token).toBeUndefined();
     const done = await waitFor(job.id, "done");
     expect(done.summary).toMatch(/^ran \/research-company /);
     expect(done.signal?.subject.email).toBe("priya@example-logistics.com");
+  });
+
+  it("guards reads with the admin token; a browser can use basic auth", async () => {
+    const res = await app.request("/jobs");
+    expect(res.status).toBe(401);
+    expect(res.headers.get("www-authenticate")).toMatch(/Basic/);
+    for (const path of ["/", "/drafts", "/integrations"]) expect((await app.request(path)).status, path).toBe(401);
+    const basic = { authorization: `Basic ${Buffer.from(":admin").toString("base64")}` };
+    expect((await app.request("/", { headers: basic })).status).toBe(200);
+    expect((await app.request("/jobs", { headers: admin })).status).toBe(200);
+    expect((await app.request("/healthz")).status).toBe(200);
   });
 
   it("guards /jobs/run with the admin token", async () => {
@@ -98,13 +110,13 @@ describe("server", () => {
     expect(done.writes?.[0]).toMatchObject({ ok: false, error: expect.stringMatching(/SLACK_BOT_TOKEN/) });
     const again = await app.request(`/jobs/${job.id}/complete`, { method: "POST", body: JSON.stringify(completion), headers: { authorization: `Bearer ${token}` } });
     expect(again.status).toBe(409);
-    const drafts = (await (await app.request("/drafts")).json()) as { drafts: Array<{ to: string }> };
+    const drafts = (await (await app.request("/drafts", { headers: admin })).json()) as { drafts: Array<{ to: string }> };
     expect(drafts.drafts.some((d) => d.to === "priya@example-logistics.com")).toBe(true);
   });
 
   it("serves a log only for a known job id", async () => {
-    expect((await app.request("/jobs/..%2F..%2Fpackage/log")).status).toBe(404);
-    expect((await app.request("/jobs/../../package/log")).status).toBe(404);
+    expect((await app.request("/jobs/..%2F..%2Fpackage/log", { headers: admin })).status).toBe(404);
+    expect((await app.request("/jobs/../../package/log", { headers: admin })).status).toBe(404);
   });
 
   it("rejects a body over the limit", async () => {

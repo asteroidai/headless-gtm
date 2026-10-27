@@ -9,7 +9,7 @@ You are talking to a founder who just cloned this repo. Go step by step. Ask one
 
 ## 1. Check the basics
 
-Run `node --version` (need 20.12+), `pnpm --version`, `claude --version`. Run `pnpm install` if `node_modules/` is missing. Copy `.env.example` to `.env` if `.env` is missing.
+Run `node --version` (need 20.12+), `pnpm --version`, `claude --version`. Run `pnpm install` if `node_modules/` is missing. Copy `.env.example` to `.env` if `.env` is missing. Set `ADMIN_TOKEN` to a long random string (`openssl rand -hex 16`) and say that the dashboard asks for it as the password.
 
 Ask how they run Claude: a subscription (then run `claude setup-token` and put the token in `CLAUDE_CODE_OAUTH_TOKEN`) or an API key (`ANTHROPIC_API_KEY`). Tell them to check Anthropic's terms for their usage.
 
@@ -31,7 +31,7 @@ Remove `icp/example.md` only if they ask.
 
 ## 4. Start the server
 
-Run `pnpm dev` in the background. Confirm `curl -s localhost:5005/healthz`. Open `http://localhost:5005`.
+Run `pnpm dev` in the background. Confirm `curl -s localhost:5005/healthz`. Open `http://localhost:5005`; the password is `ADMIN_TOKEN`, the user name is empty.
 
 ## 5. Expose it
 
@@ -41,7 +41,7 @@ For a production box point them at `docs/deploy-mac-mini.md`.
 
 ## 6. Fire a test
 
-Run `pnpm -s gtm webhook <source>`. It replays the recorded fixture with a valid signature at the local server. Then poll `curl -s localhost:5005/jobs | head -c 600` until the job is `done`, and show the Slack message or the `summary`. If the job failed, `cat` its log from `data/jobs/<id>.log` and fix the cause with them.
+Run `pnpm -s gtm webhook <source>`. It replays the recorded fixture with a valid signature at the local server. Then run `pnpm -s gtm jobs` until the job is `done`, and show the Slack message or the summary from `pnpm -s gtm jobs` / the dashboard.| head -c 600` until the job is `done`, and show the Slack message or the `summary`. If the job failed, `cat` its log from `data/jobs/<id>.log` and fix the cause with them.
 
 ## 7. Hand over
 
