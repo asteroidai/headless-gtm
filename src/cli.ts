@@ -105,15 +105,15 @@ function ensureCollection(doc: Document, key: string, empty: unknown[] | Record<
 
 /** An empty `[]` or `{}` in the file stays flow-style once filled. Block style reads better. */
 function blockStyle(doc: Document): void {
-  if (isCollection(doc.contents)) doc.contents.flow = false;
+  const block = (node: unknown) => {
+    if (isCollection(node) && node.items.length) node.flow = false;
+  };
+  block(doc.contents);
   for (const key of ["integrations", "on", "schedules", "settings"]) {
     const node = doc.get(key, true);
     if (!isCollection(node)) continue;
-    node.flow = false;
-    for (const item of node.items) {
-      const value = (item as { value?: unknown }).value ?? item;
-      if (isCollection(value)) value.flow = false;
-    }
+    block(node);
+    for (const item of node.items) block((item as { value?: unknown }).value ?? item);
   }
 }
 
