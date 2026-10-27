@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server";
 import { execSync } from "node:child_process";
 import { loadConfig } from "./config.ts";
 import { loadEnv } from "./env.ts";
-import { loadIntegrations, missingEnv } from "./integrations.ts";
+import { loadIntegrations } from "./integrations.ts";
 import { recoverJobs } from "./jobs.ts";
 import { startCron } from "./cron.ts";
 import { runSchedule } from "./pulls.ts";
@@ -17,10 +17,6 @@ configureQueue(cfg);
 configureWrites(cfg.settings);
 
 const integrations = await loadIntegrations(cfg.integrations);
-for (const i of integrations) {
-  const missing = missingEnv(i.manifest);
-  if (missing.length) console.warn(`[${i.manifest.name}] missing env: ${missing.join(", ")}`);
-}
 if (!process.env.ADMIN_TOKEN) console.warn("ADMIN_TOKEN is empty: admin routes are open. Fine on a laptop, not in production.");
 
 const interrupted = recoverJobs();

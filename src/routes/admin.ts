@@ -3,7 +3,7 @@ import { requireAdmin } from "../auth.ts";
 import { authStatus, rotateToken } from "../claude-auth.ts";
 import type { Config } from "../config.ts";
 import { getDraft, listDrafts } from "../drafts.ts";
-import { enabledIntegrations, missingEnv } from "../integrations.ts";
+import { disabledIntegrations, enabledIntegrations } from "../integrations.ts";
 import { runPull, runSchedule } from "../pulls.ts";
 import { poolStatus } from "../queue.ts";
 
@@ -15,7 +15,8 @@ export function adminRoutes(cfg: Config): Hono {
   app.get("/integrations", (c) =>
     c.json({
       ok: true,
-      integrations: enabledIntegrations().map((i) => ({ ...i.manifest, missingEnv: missingEnv(i.manifest) })),
+      integrations: enabledIntegrations().map((i) => i.manifest),
+      disabled: disabledIntegrations(),
       on: cfg.on,
       schedules: cfg.schedules,
     }),

@@ -3,11 +3,11 @@ import { resolve } from "node:path";
 import { isCollection, parseDocument, type Document } from "yaml";
 import { CONFIG_PATH, loadConfig } from "./config.ts";
 import { ROOT, env, loadEnv } from "./env.ts";
-import { INTEGRATIONS_DIR, listAvailable, loadIntegrations, missingEnv, readManifest } from "./integrations.ts";
+import { INTEGRATIONS_DIR, listAvailable, loadIntegrations, missingEnv, notEnabledReason, readManifest } from "./integrations.ts";
 import { configureWrites, runAction } from "./writes.ts";
 
 const USAGE = `usage:
-  gtm list                                 integrations and whether they are enabled
+  gtm list                                 integrations: on, off, or disabled for missing env
   gtm add <integration>                    enable one in gtm.config.yaml, print its env vars
   gtm tool <integration> <action> [json]   call an action (skills use this for reads)
   gtm run <skill> [json]                   queue a skill run on the local server
@@ -54,8 +54,10 @@ function need(v: string | undefined, what: string): string {
 function list(): void {
   const enabled = new Set(loadConfig().integrations);
   for (const m of listAvailable()) {
-    const mark = enabled.has(m.name) ? "on " : "off";
-    console.log(`${mark}  ${m.name.padEnd(22)} ${m.kind.padEnd(7)} ${m.description}`);
+    const missing = enabled.has(m.name) ? missingEnv(m) : [];
+    const mark = !enabled.has(m.name) ? "off" : missing.length ? "!! " : "on ";
+    const what = missing.length ? `disabled: missing ${missing.join(", ")}` : m.description;
+    console.log(`${mark}  ${m.name.padEnd(22)} ${m.kind.padEnd(7)} ${what}`);
   }
 }
 
@@ -132,7 +134,8 @@ async function webhook(source: string, fixture?: string): Promise<void> {
   if (!file) throw new Error(`no fixtures in ${dir}`);
   const rawBody = readFileSync(resolve(dir, file), "utf8");
   const [i] = await loadIntegrations([source]);
-  const signed = i?.sign?.(rawBody) ?? {};
+  if (!i) throw new Error(`${notEnabledReason(source)}. Set it in .env first.`);
+  const signed = i.sign?.(rawBody) ?? {};
   const qs = new URLSearchParams(signed.query ?? {}).toString();
   await request(`/webhooks/${source}${qs ? `?${qs}` : ""}`, rawBody, signed.headers);
 }

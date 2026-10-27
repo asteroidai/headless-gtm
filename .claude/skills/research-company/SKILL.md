@@ -45,7 +45,7 @@ Every claim cites a source (a page, a tool result, the signal) or is labelled a 
 
 ## 5. Complete
 
-One POST, then stop. Include the CRM writes only when `attio` is enabled; include the Slack post only when `slack` is enabled (`pnpm -s gtm list` shows this).
+One POST, then stop. Include the CRM writes only when `attio` is enabled and the Slack post only when `slack` is enabled; `pnpm -s gtm list` shows `on` for each. When `slack` is not enabled, put the whole brief in `summary` instead. The dashboard shows it.
 
 ```bash
 curl -s -X POST "$completeUrl" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' -d @- <<'JSON'

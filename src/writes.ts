@@ -1,5 +1,5 @@
 import { saveDraft } from "./drafts.ts";
-import { getIntegration } from "./integrations.ts";
+import { getIntegration, notEnabledReason } from "./integrations.ts";
 import type { Completion, Settings, WriteRequest, WriteResult } from "./types.ts";
 
 let settings: Record<string, Settings> = {};
@@ -11,7 +11,7 @@ export function configureWrites(s: Record<string, Settings>): void {
 /** Run one action of an enabled integration. */
 export async function runAction(integration: string, action: string, input: Record<string, unknown>): Promise<unknown> {
   const i = getIntegration(integration);
-  if (!i) throw new Error(`integration "${integration}" is not enabled`);
+  if (!i) throw new Error(notEnabledReason(integration));
   const fn = i.actions?.[action];
   if (!fn) throw new Error(`"${integration}" has no action "${action}"`);
   return fn(input, settings[integration] ?? {});
@@ -23,7 +23,8 @@ export async function applyWrites(writes: WriteRequest[]): Promise<WriteResult[]
   for (const w of writes) {
     const kind = getIntegration(w.integration)?.manifest.kind;
     try {
-      if (kind !== "write") throw new Error(`"${w.integration}" is not an enabled write integration`);
+      if (!kind) throw new Error(notEnabledReason(w.integration));
+      if (kind !== "write") throw new Error(`"${w.integration}" is a ${kind} integration, not a write`);
       results.push({ ...w, ok: true, result: await runAction(w.integration, w.action, w.input ?? {}) });
     } catch (err) {
       results.push({ ...w, ok: false, error: err instanceof Error ? err.message : String(err) });

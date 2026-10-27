@@ -51,4 +51,4 @@ curl -s -X POST "$completeUrl" -H "Authorization: Bearer $token" -H 'Content-Typ
 JSON
 ```
 
-Drop the Slack write when `slack` is not enabled; the summary still lands on the dashboard. Then reply with one line: the company, your confidence, and whether the CRM knew them.
+When `slack` is not enabled (`pnpm -s gtm list` shows it off or disabled), put the whole brief in `summary` and send no writes. The dashboard shows the summary. Then reply with one line: the company, your confidence, and whether the CRM knew them.

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { listDrafts } from "../drafts.ts";
-import { enabledIntegrations } from "../integrations.ts";
+import { disabledIntegrations, enabledIntegrations } from "../integrations.ts";
 import { listJobs } from "../jobs.ts";
 import { poolStatus } from "../queue.ts";
 
@@ -27,14 +27,17 @@ export function dashboardRoutes(): Hono {
       .slice(0, 20)
       .map((d) => `<li><b>${esc(d.kind)}</b> ${esc(d.to ?? "")} ${esc(d.subject ?? "")} <a href="/drafts/${d.id}">open</a></li>`)
       .join("\n");
-    const names = enabledIntegrations().map((i) => `<code>${esc(i.manifest.name)}</code>`).join(" ");
+    const names = [
+      ...enabledIntegrations().map((i) => `<code>${esc(i.manifest.name)}</code>`),
+      ...disabledIntegrations().map((d) => `<code class="off">${esc(d.name)}</code> (disabled: missing ${esc(d.missing.join(", "))})`),
+    ].join(" ");
     return c.html(`<!doctype html>
 <meta charset="utf-8"><title>headless-gtm</title>
 <style>
 body{font:14px system-ui;margin:2rem;max-width:1100px;color:#222}
 table{border-collapse:collapse;width:100%}td,th{padding:.35rem .5rem;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}
 tr.running td:nth-child(3){color:#b7791f}tr.failed td:nth-child(3){color:#c53030}tr.done td:nth-child(3){color:#2f855a}
-code{background:#f3f3f3;padding:0 .3rem}
+code{background:#f3f3f3;padding:0 .3rem}code.off{color:#c53030}
 </style>
 <h1>headless-gtm</h1>
 <p>Agents: ${pool.active}/${pool.limit} running, ${pool.waiting} waiting. Integrations: ${names || "none"}.</p>

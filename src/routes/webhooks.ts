@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { Config } from "../config.ts";
-import { getIntegration } from "../integrations.ts";
+import { disabledIntegrations, getIntegration } from "../integrations.ts";
 import { dispatch } from "../pulls.ts";
 import { MAX_BODY_BYTES } from "./jobs.ts";
 
@@ -11,7 +11,11 @@ export function webhookRoutes(cfg: Config): Hono {
   app.post("/:source", bodyLimit({ maxSize: MAX_BODY_BYTES }), async (c) => {
     const source = c.req.param("source");
     const integration = getIntegration(source);
-    if (!integration?.handle) return c.json({ ok: false, error: "unknown source" }, 404);
+    if (!integration?.handle) {
+      const off = disabledIntegrations().find((d) => d.name === source);
+      if (off) return c.json({ ok: false, error: `${source} is disabled: missing ${off.missing.join(", ")}` }, 503);
+      return c.json({ ok: false, error: "unknown source" }, 404);
+    }
 
     const rawBody = await c.req.text();
     let body: unknown = null;

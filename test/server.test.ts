@@ -42,6 +42,15 @@ describe("server", () => {
     expect(res.status).toBe(200);
   });
 
+  it("lists an integration with missing env as disabled and answers 503 for its webhook", async () => {
+    const body = (await (await app.request("/integrations")).json()) as { disabled: Array<{ name: string; missing: string[] }> };
+    expect(body.disabled).toHaveLength(1);
+    expect(body.disabled[0]!.name).toBe("slack");
+    expect(body.disabled[0]!.missing).toContain("SLACK_BOT_TOKEN");
+    const res = await app.request("/webhooks/slack", { method: "POST", body: "{}" });
+    expect(res.status).toBe(503);
+  });
+
   it("404s an unknown webhook source and 401s a bad secret", async () => {
     expect((await app.request("/webhooks/nope", { method: "POST", body: "{}" })).status).toBe(404);
     const bad = await app.request("/webhooks/signup", { method: "POST", body: fixture, headers: { "x-signup-secret": "wrong" } });

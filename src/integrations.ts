@@ -6,6 +6,7 @@ import type { Integration, LoadedIntegration, Manifest } from "./types.ts";
 export const INTEGRATIONS_DIR = resolve(ROOT, "integrations");
 
 const loaded = new Map<string, LoadedIntegration>();
+const disabled = new Map<string, string[]>();
 
 export function readManifest(name: string): Manifest {
   const path = resolve(INTEGRATIONS_DIR, name, "manifest.json");
@@ -21,11 +22,18 @@ export function listAvailable(): Manifest[] {
     .map((d) => readManifest(d.name));
 }
 
-/** Import `integrations/<name>/index.ts` for each enabled name. */
+/** Import `integrations/<name>/index.ts` for each enabled name. One with missing required env is skipped and listed as disabled. */
 export async function loadIntegrations(names: string[]): Promise<LoadedIntegration[]> {
   loaded.clear();
+  disabled.clear();
   for (const name of names) {
     const manifest = readManifest(name);
+    const missing = missingEnv(manifest);
+    if (missing.length) {
+      disabled.set(name, missing);
+      console.warn(`${name}: disabled, missing ${missing.join(", ")}`);
+      continue;
+    }
     const mod = (await import(resolve(INTEGRATIONS_DIR, name, "index.ts"))) as { default: Integration };
     loaded.set(name, { manifest, ...mod.default });
   }
@@ -38,6 +46,17 @@ export function getIntegration(name: string): LoadedIntegration | undefined {
 
 export function enabledIntegrations(): LoadedIntegration[] {
   return [...loaded.values()];
+}
+
+/** Configured integrations that did not load because env is missing. */
+export function disabledIntegrations(): Array<{ name: string; missing: string[] }> {
+  return [...disabled].map(([name, missing]) => ({ name, missing }));
+}
+
+/** Why `getIntegration(name)` returned nothing, in a sentence for a log or an error. */
+export function notEnabledReason(name: string): string {
+  const missing = disabled.get(name);
+  return missing ? `"${name}" is disabled: missing ${missing.join(", ")}` : `"${name}" is not enabled`;
 }
 
 /** Env vars a manifest marks required that are not set. */
