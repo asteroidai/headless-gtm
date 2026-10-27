@@ -4,7 +4,7 @@
   "description": "Post messages and thread replies to Slack. This is how skills reach a human.",
   "env": [
     { "name": "SLACK_BOT_TOKEN", "required": true, "about": "Bot token (xoxb-...) with chat:write. Invite the bot to the channel." },
-    { "name": "SLACK_CHANNEL", "required": true, "about": "Default channel, as #name or an ID." }
+    { "name": "SLACK_CHANNEL", "required": true, "about": "Default channel, as #name or an ID. Quote #name in .env: SLACK_CHANNEL=\"#gtm\"." }
   ],
   "skills": []
 }

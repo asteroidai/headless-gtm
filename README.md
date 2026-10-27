@@ -28,6 +28,8 @@ In another terminal, expose the port:
 cloudflared tunnel --url http://localhost:5005   # or: ngrok http 5005
 ```
 
+The tunnel exposes every route, not only `/webhooks/*`. Set `ADMIN_TOKEN` in `.env` before you open it, and close it when you are done. `/jobs` and `/drafts` stay readable to anyone who has the URL.
+
 In Cal.com: Settings, Developer, Webhooks, New. Subscriber URL `https://<your-tunnel>/webhooks/cal-com`, trigger "Booking created", secret = your `CALCOM_WEBHOOK_SECRET`. Book a test slot.
 
 Or skip Cal.com and replay the recorded fixture:
@@ -36,7 +38,7 @@ Or skip Cal.com and replay the recorded fixture:
 pnpm gtm webhook cal-com
 ```
 
-Open http://localhost:5005. The job appears, `claude` runs `/pre-demo-brief`, and the brief lands in Slack (or in the job summary when Slack is not enabled).
+Open http://localhost:5005. The job appears, `claude` runs `/pre-demo-brief`, and the brief lands in Slack. No Slack yet? Remove `slack` from `integrations` in `gtm.config.yaml`; the brief then lands in the job summary.
 
 Or let Claude Code do the setup with you: open `claude` in the repo and type `/setup`.
 
@@ -104,6 +106,8 @@ The server applies the writes and keeps the drafts. Skills read tools with `pnpm
 Headless runs use the Claude Code CLI. It runs on a Claude subscription (`claude setup-token`, then `CLAUDE_CODE_OAUTH_TOKEN`) or on an API key (`ANTHROPIC_API_KEY`). With both set, the subscription token wins. Check Anthropic's terms for your usage. A browser login expires; a long-lived token does not, and `POST /admin/claude-auth` rotates it without touching the box.
 
 Headless runs have no MCP OAuth sessions. Writes go through the server's adapters with API keys.
+
+Headless runs pass `--dangerously-skip-permissions`. The agent can run any command in the repo, where `.env` lives. Run it on a machine, and under a user account, that you trust with those keys.
 
 ## HTTP API
 
