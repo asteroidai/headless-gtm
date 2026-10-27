@@ -60,6 +60,8 @@ settings:
 
 `pnpm gtm add <integration>` enables one, merges its defaults, and prints the env vars to set.
 
+Schedules use the box's local time. Day-of-month and day-of-week must both match.
+
 ## Integrations
 
 | kind | name | what |

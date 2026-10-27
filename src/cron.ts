@@ -1,4 +1,7 @@
-/** Five-field cron: minute hour day-of-month month day-of-week. Supports `*`, n, a-b, a,b, * /n. Sunday is 0 or 7. */
+/**
+ * Five-field cron: minute hour day-of-month month day-of-week. Supports `*`, n, a-b, a,b, * /n. Sunday is 0 or 7.
+ * Fields match the box's local time. Day-of-month and day-of-week must both match.
+ */
 
 const RANGES: Array<[number, number]> = [[0, 59], [0, 23], [1, 31], [1, 12], [0, 7]];
 
