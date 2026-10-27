@@ -1,12 +1,11 @@
-import { timingSafeEqual } from "node:crypto";
+import { safeEqual } from "../../src/auth.ts";
 import { env } from "../../src/env.ts";
 import { obj, str } from "../../src/http.ts";
 import { domainOf, makeSignal } from "../../src/signals.ts";
 import type { Integration, Signal } from "../../src/types.ts";
 
 export function verify(secret: string | undefined, expected = env("SIGNUP_SECRET")): boolean {
-  if (!secret || !expected || secret.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(secret), Buffer.from(expected));
+  return !!secret && !!expected && safeEqual(secret, expected);
 }
 
 /** Body: { email, name?, company?, plan?, ...anything else }. Extra fields ride in the payload. */

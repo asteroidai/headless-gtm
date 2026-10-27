@@ -1,3 +1,4 @@
+import { safeEqual } from "../../src/auth.ts";
 import { env } from "../../src/env.ts";
 import { obj, str } from "../../src/http.ts";
 import { domainOf, makeSignal } from "../../src/signals.ts";
@@ -41,7 +42,7 @@ const integration: Integration = {
   handle(req) {
     const token = req.query.token ?? req.headers["x-webhook-token"];
     const expected = env("RB2B_TOKEN");
-    if (!expected || token !== expected) return null;
+    if (!expected || !token || !safeEqual(token, expected)) return null;
     return parse(req.body);
   },
   sign() {
