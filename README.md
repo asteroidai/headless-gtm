@@ -1,4 +1,4 @@
-# headless-gtm
+# headless-ops
 
 A GTM engine for founders, with Claude Code as the backend.
 
@@ -16,7 +16,7 @@ Plus **writes**: thin adapters for a CRM (Attio) and Slack. A human approves bef
 You need Node 20.12+, pnpm, and the [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) logged in.
 
 ```sh
-git clone https://github.com/asteroidai/headless-gtm && cd headless-gtm
+git clone https://github.com/asteroidai/headless-ops && cd headless-ops
 pnpm install
 cp .env.example .env         # set CALCOM_WEBHOOK_SECRET (any string) and ADMIN_TOKEN (openssl rand -hex 16)
 pnpm gtm doctor              # node, claude, .env, config

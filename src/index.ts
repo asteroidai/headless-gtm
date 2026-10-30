@@ -27,7 +27,7 @@ startCron(cfg.schedules, (name) => {
 });
 
 serve({ fetch: createApp(cfg).fetch, port: cfg.port }, () => {
-  console.log(`headless-gtm on http://localhost:${cfg.port} (${integrations.length} integrations, ${cfg.schedules.length} schedules)`);
+  console.log(`headless-ops on http://localhost:${cfg.port} (${integrations.length} integrations, ${cfg.schedules.length} schedules)`);
   void bootMessage();
 });
 
@@ -47,7 +47,7 @@ async function bootMessage(): Promise<void> {
   } catch {
     // not a git checkout
   }
-  await runAction("slack", "post", { text: `headless-gtm booted at ${sha} with ${integrations.length} integrations` }).catch((err) =>
+  await runAction("slack", "post", { text: `headless-ops booted at ${sha} with ${integrations.length} integrations` }).catch((err) =>
     console.warn(`boot message failed: ${err instanceof Error ? err.message : err}`),
   );
 }

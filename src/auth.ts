@@ -9,7 +9,7 @@ import { env } from "./env.ts";
 export async function requireAdmin(c: Context, next: Next): Promise<Response | void> {
   const token = env("ADMIN_TOKEN");
   if (!token || presented(c).some((t) => safeEqual(t, token))) return next();
-  c.header("WWW-Authenticate", 'Basic realm="headless-gtm"');
+  c.header("WWW-Authenticate", 'Basic realm="headless-ops"');
   return c.json({ ok: false, error: "unauthorized" }, 401);
 }
 

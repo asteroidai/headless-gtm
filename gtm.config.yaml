@@ -1,4 +1,4 @@
-# headless-gtm config. Nothing runs unless it is listed here.
+# headless-ops config. Nothing runs unless it is listed here.
 port: 5005
 
 claude:

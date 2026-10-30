@@ -16,8 +16,8 @@ The shape:
 ```sh
 brew install node pnpm cloudflared
 npm install -g @anthropic-ai/claude-code
-git clone https://github.com/asteroidai/headless-gtm ~/headless-gtm
-cd ~/headless-gtm && pnpm install
+git clone https://github.com/asteroidai/headless-ops ~/headless-ops
+cd ~/headless-ops && pnpm install
 cp .env.example .env
 ```
 
@@ -64,25 +64,25 @@ GTM_URL=https://gtm.yourco.com ADMIN_TOKEN=... pnpm gtm jobs
 Templates are in `deploy/`. Edit the paths, then:
 
 ```sh
-sed "s|__HOME__|$HOME|g" deploy/com.yourco.headless-gtm.plist > ~/Library/LaunchAgents/com.yourco.headless-gtm.plist
-launchctl load -w ~/Library/LaunchAgents/com.yourco.headless-gtm.plist
+sed "s|__HOME__|$HOME|g" deploy/com.yourco.headless-ops.plist > ~/Library/LaunchAgents/com.yourco.headless-ops.plist
+launchctl load -w ~/Library/LaunchAgents/com.yourco.headless-ops.plist
 sleep 3 && curl -fsS localhost:5005/healthz
 ```
 
-Logs: `~/Library/Logs/headless-gtm.log`. `KeepAlive` restarts it on a crash; `RunAtLoad` starts it at login. Enable automatic login for the user so a reboot comes back without a keyboard.
+Logs: `~/Library/Logs/headless-ops.log`. `KeepAlive` restarts it on a crash; `RunAtLoad` starts it at login. Enable automatic login for the user so a reboot comes back without a keyboard.
 
 The tunnel was installed as a system service in step 2 and needs no plist.
 
 ## 5. Update without SSH
 
-`deploy/deploy.sh` fetches `origin/main`, and when the SHA changed, pulls, installs, runs `pnpm typecheck`, and restarts the server service. `deploy/com.yourco.headless-gtm.deploy.plist` runs it every five minutes.
+`deploy/deploy.sh` fetches `origin/main`, and when the SHA changed, pulls, installs, runs `pnpm typecheck`, and restarts the server service. `deploy/com.yourco.headless-ops.deploy.plist` runs it every five minutes.
 
 ```sh
-sed "s|__HOME__|$HOME|g" deploy/com.yourco.headless-gtm.deploy.plist > ~/Library/LaunchAgents/com.yourco.headless-gtm.deploy.plist
-launchctl load -w ~/Library/LaunchAgents/com.yourco.headless-gtm.deploy.plist
+sed "s|__HOME__|$HOME|g" deploy/com.yourco.headless-ops.deploy.plist > ~/Library/LaunchAgents/com.yourco.headless-ops.deploy.plist
+launchctl load -w ~/Library/LaunchAgents/com.yourco.headless-ops.deploy.plist
 ```
 
-So the loop is: merge to `main`, wait five minutes, watch Slack for "headless-gtm booted at <sha>". No merge, no restart.
+So the loop is: merge to `main`, wait five minutes, watch Slack for "headless-ops booted at <sha>". No merge, no restart.
 
 A restart marks any job that was running as `failed: interrupted by restart`. It does not re-run it. Fire the webhook again if you need it.
 
@@ -104,7 +104,7 @@ The server writes the token to `.env`, sets it on the running process, and answe
 
 | symptom | usual cause |
 |---|---|
-| Tunnel returns 502 | The server is down. `launchctl list \| grep headless-gtm`, then read `~/Library/Logs/headless-gtm.log`. |
+| Tunnel returns 502 | The server is down. `launchctl list \| grep headless-ops`, then read `~/Library/Logs/headless-ops.log`. |
 | Webhook returns 401 | Wrong secret, or the secret is unset (integrations fail closed). |
 | Webhook returns 404 | The integration is not in `gtm.config.yaml`, or the path is not `/webhooks/<name>`. |
 | Job `failed: could not spawn claude` | `claude` is not on launchd's PATH. Set `CLAUDE_BIN` in `.env` to the full path. |

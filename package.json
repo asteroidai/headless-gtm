@@ -1,5 +1,5 @@
 {
-  "name": "headless-gtm",
+  "name": "headless-ops",
   "version": "0.1.0",
   "description": "A Claude-Code-first GTM engine: webhooks, cron jobs and skills, with Claude Code as the backend.",
   "license": "MIT",

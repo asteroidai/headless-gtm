@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Walk a new user through setting up headless-gtm - pick integrations, fill .env, write a first ICP card from their customers, start the server and a tunnel, fire a test webhook. Triggers on `/setup`.
+description: Walk a new user through setting up headless-ops - pick integrations, fill .env, write a first ICP card from their customers, start the server and a tunnel, fire a test webhook. Triggers on `/setup`.
 ---
 
 # setup

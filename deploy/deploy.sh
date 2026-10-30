@@ -11,5 +11,5 @@ echo "$(date -u +%FT%TZ) deploying $remote_sha"
 git reset -q --hard origin/main
 pnpm install --frozen-lockfile --silent
 pnpm typecheck
-launchctl kickstart -k "gui/$(id -u)/com.yourco.headless-gtm"
+launchctl kickstart -k "gui/$(id -u)/com.yourco.headless-ops"
 echo "$(date -u +%FT%TZ) restarted"

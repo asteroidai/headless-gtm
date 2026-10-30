@@ -12,7 +12,7 @@ export interface Mention {
   snippet?: string;
 }
 
-const UA = { "user-agent": "headless-gtm/0.1 (keyword digest)" };
+const UA = { "user-agent": "headless-ops/0.1 (keyword digest)" };
 
 export async function searchHn(keyword: string, sinceSec: number): Promise<Mention[]> {
   const q = new URLSearchParams({ query: keyword, tags: "(story,comment)", numericFilters: `created_at_i>${sinceSec}`, hitsPerPage: "50" });

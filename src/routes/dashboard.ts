@@ -33,7 +33,7 @@ export function dashboardRoutes(): Hono {
       ...disabledIntegrations().map((d) => `<code class="off">${esc(d.name)}</code> (disabled: missing ${esc(d.missing.join(", "))})`),
     ].join(" ");
     return c.html(`<!doctype html>
-<meta charset="utf-8"><title>headless-gtm</title>
+<meta charset="utf-8"><title>headless-ops</title>
 <style>
 body{font:14px system-ui;margin:2rem;max-width:1100px;color:#222}
 table{border-collapse:collapse;width:100%}td,th{padding:.35rem .5rem;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}
@@ -41,7 +41,7 @@ tr.running td:nth-child(3){color:#b7791f}tr.failed td:nth-child(3){color:#c53030
 pre{white-space:pre-wrap;margin:.4rem 0;font:13px/1.4 system-ui}
 code{background:#f3f3f3;padding:0 .3rem}code.off{color:#c53030}
 </style>
-<h1>headless-gtm</h1>
+<h1>headless-ops</h1>
 <p>Agents: ${pool.active}/${pool.limit} running, ${pool.waiting} waiting. Integrations: ${names || "none"}.</p>
 <h2>Drafts waiting for review (${drafts.length})</h2>
 <ul>${draftRows || "<li>none</li>"}</ul>

@@ -2,12 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key><string>com.yourco.headless-gtm</string>
+  <key>Label</key><string>com.yourco.headless-ops</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/sh</string>
     <string>-c</string>
-    <string>cd __HOME__/headless-gtm &amp;&amp; exec pnpm start</string>
+    <string>cd __HOME__/headless-ops &amp;&amp; exec pnpm start</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
@@ -16,7 +16,7 @@
   </dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
-  <key>StandardOutPath</key><string>__HOME__/Library/Logs/headless-gtm.log</string>
-  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/headless-gtm.log</string>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/headless-ops.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/headless-ops.log</string>
 </dict>
 </plist>

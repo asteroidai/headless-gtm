@@ -21,7 +21,7 @@ interface User {
 const API = "https://api.github.com";
 
 function headers(): Record<string, string> {
-  const h: Record<string, string> = { accept: "application/vnd.github.star+json", "user-agent": "headless-gtm" };
+  const h: Record<string, string> = { accept: "application/vnd.github.star+json", "user-agent": "headless-ops" };
   const token = env("GITHUB_TOKEN");
   if (token) h.authorization = `Bearer ${token}`;
   return h;
